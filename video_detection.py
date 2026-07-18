@@ -12,7 +12,8 @@ video_path = input("Enter video path: ")
 results = model.predict(
     source=video_path,
     conf=0.25,
-    save=True
+    save=True,
+    show=True
 )
 
 # Process detections
