@@ -17,7 +17,7 @@ This project was developed as a group academic project using Python, OpenCV, and
 -  Modular Project Structure
 
 
-## 🛠 Technologies Used
+## Technologies Used
 
 - Python 3.x
 - OpenCV
