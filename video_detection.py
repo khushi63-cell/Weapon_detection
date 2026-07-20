@@ -16,12 +16,21 @@ model = YOLO("models/best.pt")
 root = Tk()
 root.withdraw()
 
+<<<<<<< HEAD
 video_path = askopenfilename(
     title="Select Video",
     filetypes=[
         ("Video Files", "*.mp4 *.avi *.mov"),
         ("All Files", "*.*")
     ]
+=======
+# Predict on video
+results = model.predict(
+    source=video_path,
+    conf=0.25,
+    save=True,
+    show=True
+>>>>>>> 21193121d6ac60b268944d9fcab5bc26c43bb0f6
 )
 
 if not video_path:
