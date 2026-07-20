@@ -6,7 +6,19 @@ import cv2
 model = YOLO("models/best.pt")
 
 # Ask user for image path
-image_path = input("Enter image path: ")
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
+
+root = Tk()
+root.withdraw()
+
+image_path = askopenfilename(
+    title="Select an Image",
+    filetypes=[
+        ("Image Files", "*.jpg *.jpeg *.png *.bmp"),
+        ("All Files", "*.*")
+    ]
+)
 
 # Predict on image
 results = model.predict(

@@ -1,35 +1,98 @@
-from alert_system import trigger_alert
 from ultralytics import YOLO
+from alert_system import trigger_alert
 import cv2
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
+import os
 
-# Load trained model
+# -----------------------------
+# Load Model
+# -----------------------------
 model = YOLO("models/best.pt")
 
-# Ask user for video path
-video_path = input("Enter video path: ")
+# -----------------------------
+# Select Video
+# -----------------------------
+root = Tk()
+root.withdraw()
 
-# Predict on video
-results = model.predict(
-    source=video_path,
-    conf=0.25,
-    save=True
+video_path = askopenfilename(
+    title="Select Video",
+    filetypes=[
+        ("Video Files", "*.mp4 *.avi *.mov"),
+        ("All Files", "*.*")
+    ]
 )
 
-# Process detections
-for r in results:
-    annotated_frame = r.plot()
+if not video_path:
+    print("No video selected.")
+    exit()
 
-    for box in r.boxes:
-        confidence = float(box.conf[0])
-        cls = int(box.cls[0])
-        label = r.names[cls]
+# -----------------------------
+# Open Video
+# -----------------------------
+cap = cv2.VideoCapture(video_path)
 
-        if confidence > 0.5:
-            annotated_frame = trigger_alert(
-                annotated_frame,
-                label,
-                confidence,
-                box
-            )
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fps = cap.get(cv2.CAP_PROP_FPS)
 
-print("Video Detection Completed!")
+if fps <= 0:
+    fps = 25
+
+# -----------------------------
+# Output Video
+# -----------------------------
+output_path = "output_detected.mp4"
+
+fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+
+writer = cv2.VideoWriter(
+    output_path,
+    fourcc,
+    fps,
+    (width, height)
+)
+
+print("Processing...")
+
+# -----------------------------
+# Frame-by-frame Detection
+# -----------------------------
+while True:
+
+    ret, frame = cap.read()
+
+    if not ret:
+        break
+
+    results = model(frame, conf=0.25)
+
+    annotated = results[0].plot()
+
+    if len(results[0].boxes) > 0:
+
+        for box in results[0].boxes:
+
+            confidence = float(box.conf[0])
+
+            cls = int(box.cls[0])
+
+            label = results[0].names[cls]
+
+            if confidence >= 0.50:
+
+                annotated = trigger_alert(
+                    annotated,
+                    label,
+                    confidence,
+                    box
+                )
+
+    writer.write(annotated)
+
+cap.release()
+writer.release()
+
+print("Done!")
+print("Saved as:", os.path.abspath(output_path))
